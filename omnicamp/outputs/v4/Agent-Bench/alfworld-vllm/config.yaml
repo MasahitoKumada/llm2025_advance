@@ -1,0 +1,38 @@
+assignments:
+- agent: vllm-model
+  task: alfworld-std
+concurrency:
+  agent:
+    vllm-model: 1
+  task:
+    alfworld-std: 1
+definition:
+  agent:
+    vllm-model:
+      module: src.client.agents.HTTPAgent
+      parameters:
+        body:
+          max_tokens: 512
+          model: kmd2525/test105
+          temperature: 0
+        headers:
+          Content-Type: application/json
+        name: vllm-model
+        prompter:
+          args:
+            agent_role: assistant
+          name: role_content_dict
+        return_format: '{response[choices][0][message][content]}'
+        url: http://localhost:8000/v1/chat/completions
+  task:
+    alfworld-std:
+      module: src.client.TaskClient
+      parameters:
+        config_path: src/server/tasks/alfworld/configs/base_config.yaml
+        controller_address: http://localhost:5020/api
+        data_path: /AgentBench/data/alfworld
+        max_step: 35
+        name: alfworld-std
+        prompts_path: src/server/tasks/alfworld/prompts/alfworld_multiturn_plan_first.json
+        split: standard
+output: outputs/alfworld-vllm
